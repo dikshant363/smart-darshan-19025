@@ -20,41 +20,49 @@ import Help from "./pages/Help";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AppProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Redirect root to login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<Login />} />
-          
-          {/* Main app routes with layout */}
-          <Route path="/" element={<AppLayout />}>
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="temple-info/:templeId?" element={<TempleInfo />} />
-            <Route path="booking" element={<Booking />} />
-            <Route path="queue-status" element={<QueueStatus />} />
-            <Route path="crowd-monitor" element={<CrowdMonitor />} />
-            <Route path="traffic" element={<Traffic />} />
-            <Route path="parking" element={<Parking />} />
+const App = () => {
+  return (
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <AppProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            {/* Redirect root to login */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/login" element={<Login />} />
             
-            <Route path="emergency" element={<Emergency />} />
-            <Route path="notifications" element={<Notifications />} />
-            <Route path="help" element={<Help />} />
-          </Route>
+            {/* Main app routes with layout */}
+            <Route path="/" element={<AppLayout />}>
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="temple-info/:templeId?" element={<TempleInfo />} />
+              <Route path="booking" element={<Booking />} />
+              <Route path="queue-status" element={<QueueStatus />} />
+              <Route path="crowd-monitor" element={<CrowdMonitor />} />
+              <Route path="traffic" element={<Traffic />} />
+              <Route path="parking" element={<Parking />} />
+              <Route path="emergency" element={<Emergency />} />
+              <Route path="notifications" element={<Notifications />} />
+              <Route path="help" element={<Help />} />
+            </Route>
 
-          {/* Catch-all route */}
-          <Route path="*" element={<NotFound />} />
-      </Routes>
+            {/* Catch-all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AppProvider>
+      </QueryClientProvider>
     </BrowserRouter>
-    </AppProvider>
-  </QueryClientProvider>
-);
+  );
+};
 
 export default App;
