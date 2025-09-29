@@ -9,6 +9,11 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import TempleInfo from "./pages/TempleInfo";
+import Booking from "./pages/Booking";
+import QueueStatus from "./pages/QueueStatus";
+import CrowdMonitor from "./pages/CrowdMonitor";
+import Traffic from "./pages/Traffic";
+import Parking from "./pages/Parking";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -30,12 +35,16 @@ const App = () => (
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="profile" element={<Profile />} />
             <Route path="temple-info/:templeId?" element={<TempleInfo />} />
+            <Route path="booking" element={<Booking />} />
+            <Route path="queue-status" element={<QueueStatus />} />
+            <Route path="crowd-monitor" element={<CrowdMonitor />} />
+            <Route path="traffic" element={<Traffic />} />
+            <Route path="parking" element={<Parking />} />
             
-            {/* Placeholder routes for Phase 2 */}
-            <Route path="booking" element={<div className="p-4 text-center">Booking - Coming in Phase 2</div>} />
-            <Route path="crowd-monitor" element={<div className="p-4 text-center">Crowd Monitor - Coming in Phase 2</div>} />
-            <Route path="traffic" element={<div className="p-4 text-center">Traffic - Coming in Phase 2</div>} />
+            {/* Placeholder routes for Phase 3 */}
             <Route path="emergency" element={<div className="p-4 text-center">Emergency - Coming in Phase 3</div>} />
+            <Route path="notifications" element={<div className="p-4 text-center">Notifications - Coming in Phase 2</div>} />
+            <Route path="help" element={<div className="p-4 text-center">Help - Coming in Phase 2</div>} />
           </Route>
 
           {/* Catch-all route */}
