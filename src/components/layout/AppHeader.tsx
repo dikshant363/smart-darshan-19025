@@ -1,0 +1,42 @@
+import { Menu, Bell } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useTranslation } from 'react-i18next';
+
+interface AppHeaderProps {
+  onMenuClick: () => void;
+}
+
+const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
+  const { t } = useTranslation();
+
+  return (
+    <header className="sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+      <div className="container flex h-16 items-center justify-between px-4">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onMenuClick}
+            className="text-foreground"
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
+          <div>
+            <h1 className="text-xl font-poppins font-semibold text-primary">
+              Smart Darshan
+            </h1>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="relative">
+            <Bell className="h-5 w-5" />
+            <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full" />
+          </Button>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default AppHeader;
