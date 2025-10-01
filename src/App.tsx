@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import './lib/i18n'; // Initialize i18n
 import { AppProvider } from './contexts/AppContext';
+import { AuthProvider } from './contexts/AuthContext';
 import AppLayout from "./components/layout/AppLayout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -33,10 +34,11 @@ const App = () => {
   return (
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
-        <AppProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
+        <AuthProvider>
+          <AppProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
             {/* Redirect root to login */}
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
@@ -59,7 +61,8 @@ const App = () => {
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </AppProvider>
+          </AppProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </BrowserRouter>
   );

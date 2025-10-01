@@ -1,20 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Smartphone, Globe, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Login = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { user, signInWithOtp, verifyOtp, signInAsGuest, loading: authLoading } = useAuth();
   const [phone, setPhone] = useState('');
   const [otp, setOTP] = useState('');
   const [showOTP, setShowOTP] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedTemple, setSelectedTemple] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const languages = [
     { code: 'en', name: 'English', native: 'English' },
@@ -34,14 +45,31 @@ const Login = () => {
     i18n.changeLanguage(langCode);
   };
 
-  const handleSendOTP = () => {
-    if (phone.length >= 10) {
+  const handleSendOTP = async () => {
+    if (phone.length < 10) return;
+    
+    // Format phone number to E.164 format
+    const formattedPhone = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g, '')}`;
+    
+    setLoading(true);
+    const { error } = await signInWithOtp(formattedPhone);
+    setLoading(false);
+    
+    if (!error) {
       setShowOTP(true);
     }
   };
 
-  const handleLogin = () => {
-    if (otp.length === 6) {
+  const handleLogin = async () => {
+    if (otp.length !== 6) return;
+    
+    const formattedPhone = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g, '')}`;
+    
+    setLoading(true);
+    const { error } = await verifyOtp(formattedPhone, otp);
+    setLoading(false);
+    
+    if (!error) {
       navigate('/dashboard');
     }
   };
@@ -119,10 +147,14 @@ const Login = () => {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="flex-1"
+                disabled={showOTP || loading || authLoading}
               />
               {!showOTP && (
-                <Button onClick={handleSendOTP} disabled={phone.length < 10}>
-                  Send OTP
+                <Button 
+                  onClick={handleSendOTP} 
+                  disabled={phone.length < 10 || loading || authLoading}
+                >
+                  {loading ? 'Sending...' : 'Send OTP'}
                 </Button>
               )}
             </div>
@@ -130,23 +162,45 @@ const Login = () => {
 
           {/* OTP Input */}
           {showOTP && (
-            <div className="space-y-2">
+            <div className="space-y-4">
               <label className="text-sm font-medium">
                 {t('login.otp')}
               </label>
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  placeholder="123456"
-                  value={otp}
-                  onChange={(e) => setOTP(e.target.value)}
+              <div className="flex justify-center">
+                <InputOTP
                   maxLength={6}
-                  className="flex-1"
-                />
-                <Button onClick={handleLogin} disabled={otp.length !== 6}>
-                  {t('common.continue')}
-                </Button>
+                  value={otp}
+                  onChange={(value) => setOTP(value)}
+                  disabled={loading || authLoading}
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
               </div>
+              <Button 
+                onClick={handleLogin} 
+                disabled={otp.length !== 6 || loading || authLoading}
+                className="w-full"
+              >
+                {loading ? 'Verifying...' : t('common.continue')}
+              </Button>
+              <Button 
+                onClick={() => {
+                  setShowOTP(false);
+                  setOTP('');
+                }} 
+                variant="outline"
+                className="w-full"
+                disabled={loading || authLoading}
+              >
+                Change Phone Number
+              </Button>
             </div>
           )}
 
