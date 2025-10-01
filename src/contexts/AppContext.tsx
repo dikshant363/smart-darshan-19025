@@ -1,18 +1,17 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import { useAuth } from './AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 // Types
-interface User {
+interface Profile {
   id: string;
-  phone: string;
-  name?: string;
-  preferredTemple?: string;
-  emergencyContacts?: EmergencyContact[];
-}
-
-interface EmergencyContact {
-  name: string;
-  phone: string;
-  relation: string;
+  display_name: string | null;
+  phone_number: string | null;
+  language_preference: string | null;
+  accessibility_needs: string[] | null;
+  notification_preferences: any;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 interface Booking {
@@ -26,7 +25,7 @@ interface Booking {
 }
 
 interface AppState {
-  user: User | null;
+  profile: Profile | null;
   currentBooking: Booking | null;
   isOnline: boolean;
   emergencyMode: boolean;
@@ -46,7 +45,7 @@ interface Notification {
 
 // Actions
 type AppAction = 
-  | { type: 'SET_USER'; payload: User }
+  | { type: 'SET_PROFILE'; payload: Profile | null }
   | { type: 'SET_BOOKING'; payload: Booking }
   | { type: 'SET_ONLINE_STATUS'; payload: boolean }
   | { type: 'TOGGLE_EMERGENCY_MODE' }
@@ -54,12 +53,11 @@ type AppAction =
   | { type: 'MARK_NOTIFICATION_READ'; payload: string }
   | { type: 'UPDATE_CROWD_DATA'; payload: any }
   | { type: 'UPDATE_TRAFFIC_DATA'; payload: any }
-  | { type: 'CLEAR_USER' }
   | { type: 'CLEAR_BOOKING' };
 
 // Initial state
 const initialState: AppState = {
-  user: null,
+  profile: null,
   currentBooking: null,
   isOnline: navigator.onLine,
   emergencyMode: false,
@@ -71,8 +69,8 @@ const initialState: AppState = {
 // Reducer
 const appReducer = (state: AppState, action: AppAction): AppState => {
   switch (action.type) {
-    case 'SET_USER':
-      return { ...state, user: action.payload };
+    case 'SET_PROFILE':
+      return { ...state, profile: action.payload };
     case 'SET_BOOKING':
       return { ...state, currentBooking: action.payload };
     case 'SET_ONLINE_STATUS':
@@ -95,8 +93,6 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
       return { ...state, crowdData: action.payload };
     case 'UPDATE_TRAFFIC_DATA':
       return { ...state, trafficData: action.payload };
-    case 'CLEAR_USER':
-      return { ...state, user: null };
     case 'CLEAR_BOOKING':
       return { ...state, currentBooking: null };
     default:
@@ -113,9 +109,37 @@ const AppContext = createContext<{
 // Provider
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
+  const { user } = useAuth();
+
+  // Sync profile with authenticated user
+  useEffect(() => {
+    if (user) {
+      loadProfile(user.id);
+    } else {
+      dispatch({ type: 'SET_PROFILE', payload: null });
+    }
+  }, [user]);
+
+  const loadProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        dispatch({ type: 'SET_PROFILE', payload: data });
+      }
+    } catch (error) {
+      console.error('Failed to load profile:', error);
+    }
+  };
 
   // Online/offline detection
-  React.useEffect(() => {
+  useEffect(() => {
     const handleOnline = () => dispatch({ type: 'SET_ONLINE_STATUS', payload: true });
     const handleOffline = () => dispatch({ type: 'SET_ONLINE_STATUS', payload: false });
 
@@ -145,9 +169,9 @@ export const useAppContext = () => {
 };
 
 // Utility hooks
-export const useUser = () => {
+export const useProfile = () => {
   const { state } = useAppContext();
-  return state.user;
+  return state.profile;
 };
 
 export const useBooking = () => {
