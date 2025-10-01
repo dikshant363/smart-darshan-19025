@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      booking_analytics: {
+        Row: {
+          avg_visitors_per_booking: number | null
+          cancelled_bookings: number | null
+          completed_bookings: number | null
+          created_at: string | null
+          date: string
+          id: string
+          peak_hour: string | null
+          temple_id: string
+          total_bookings: number | null
+        }
+        Insert: {
+          avg_visitors_per_booking?: number | null
+          cancelled_bookings?: number | null
+          completed_bookings?: number | null
+          created_at?: string | null
+          date: string
+          id?: string
+          peak_hour?: string | null
+          temple_id: string
+          total_bookings?: number | null
+        }
+        Update: {
+          avg_visitors_per_booking?: number | null
+          cancelled_bookings?: number | null
+          completed_bookings?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          peak_hour?: string | null
+          temple_id?: string
+          total_bookings?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_analytics_temple_id_fkey"
+            columns: ["temple_id"]
+            isOneToOne: false
+            referencedRelation: "temples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           booking_date: string
@@ -177,6 +221,59 @@ export type Database = {
           },
         ]
       }
+      emergency_incidents: {
+        Row: {
+          description: string | null
+          id: string
+          incident_type: string
+          location: unknown | null
+          reported_at: string | null
+          resolved_at: string | null
+          responder_id: string | null
+          response_notes: string | null
+          severity: string
+          status: string | null
+          temple_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          incident_type: string
+          location?: unknown | null
+          reported_at?: string | null
+          resolved_at?: string | null
+          responder_id?: string | null
+          response_notes?: string | null
+          severity: string
+          status?: string | null
+          temple_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          incident_type?: string
+          location?: unknown | null
+          reported_at?: string | null
+          resolved_at?: string | null
+          responder_id?: string | null
+          response_notes?: string | null
+          severity?: string
+          status?: string | null
+          temple_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emergency_incidents_temple_id_fkey"
+            columns: ["temple_id"]
+            isOneToOne: false
+            referencedRelation: "temples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string | null
@@ -224,6 +321,44 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parking_data: {
+        Row: {
+          available_spots: number
+          created_at: string | null
+          id: string
+          last_updated: string | null
+          parking_area_name: string
+          temple_id: string
+          total_spots: number
+        }
+        Insert: {
+          available_spots: number
+          created_at?: string | null
+          id?: string
+          last_updated?: string | null
+          parking_area_name: string
+          temple_id: string
+          total_spots: number
+        }
+        Update: {
+          available_spots?: number
+          created_at?: string | null
+          id?: string
+          last_updated?: string | null
+          parking_area_name?: string
+          temple_id?: string
+          total_spots?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parking_data_temple_id_fkey"
+            columns: ["temple_id"]
+            isOneToOne: false
+            referencedRelation: "temples"
             referencedColumns: ["id"]
           },
         ]
@@ -456,6 +591,44 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      traffic_data: {
+        Row: {
+          congestion_level: string | null
+          created_at: string | null
+          estimated_travel_time_minutes: number | null
+          id: string
+          last_updated: string | null
+          route_name: string
+          temple_id: string
+        }
+        Insert: {
+          congestion_level?: string | null
+          created_at?: string | null
+          estimated_travel_time_minutes?: number | null
+          id?: string
+          last_updated?: string | null
+          route_name: string
+          temple_id: string
+        }
+        Update: {
+          congestion_level?: string | null
+          created_at?: string | null
+          estimated_travel_time_minutes?: number | null
+          id?: string
+          last_updated?: string | null
+          route_name?: string
+          temple_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "traffic_data_temple_id_fkey"
+            columns: ["temple_id"]
+            isOneToOne: false
+            referencedRelation: "temples"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_activity_logs: {
         Row: {
@@ -1054,6 +1227,14 @@ export type Database = {
       geomfromewkt: {
         Args: { "": string }
         Returns: unknown
+      }
+      get_crowd_predictions: {
+        Args: { p_days_ahead?: number; p_temple_id: string }
+        Returns: {
+          confidence: number
+          date: string
+          predicted_level: string
+        }[]
       }
       get_proj4_from_srid: {
         Args: { "": number }

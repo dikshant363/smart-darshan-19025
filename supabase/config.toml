@@ -1,1 +1,16 @@
 project_id = "aejdnfjanbkokmcbfreg"
+
+[functions.booking-api]
+verify_jwt = true
+
+[functions.queue-api]
+verify_jwt = true
+
+[functions.crowd-api]
+verify_jwt = false
+
+[functions.emergency-api]
+verify_jwt = true
+
+[functions.temple-api]
+verify_jwt = false
