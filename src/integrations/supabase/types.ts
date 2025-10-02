@@ -363,6 +363,53 @@ export type Database = {
           },
         ]
       }
+      payment_transactions: {
+        Row: {
+          amount: number
+          booking_id: string | null
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          payment_method: string
+          status: string
+          transaction_reference: string
+          upi_string: string | null
+          utr_number: string | null
+        }
+        Insert: {
+          amount: number
+          booking_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          payment_method?: string
+          status?: string
+          transaction_reference: string
+          upi_string?: string | null
+          utr_number?: string | null
+        }
+        Update: {
+          amount?: number
+          booking_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          payment_method?: string
+          status?: string
+          transaction_reference?: string
+          upi_string?: string | null
+          utr_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           accessibility_needs: string[] | null
