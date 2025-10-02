@@ -14,3 +14,6 @@ verify_jwt = true
 
 [functions.temple-api]
 verify_jwt = false
+
+[functions.upi-payment]
+verify_jwt = false

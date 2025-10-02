@@ -11,14 +11,19 @@ import { Textarea } from '@/components/ui/textarea';
 import { CalendarIcon, Users, Clock, IndianRupee, MapPin, Star, Minus, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { UPIPaymentDialog } from '@/components/booking/UPIPaymentDialog';
+import { useToast } from '@/hooks/use-toast';
 
 const Booking = () => {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [selectedTemple, setSelectedTemple] = useState('somnath');
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedSlot, setSelectedSlot] = useState('');
   const [visitorCount, setVisitorCount] = useState(2);
   const [specialRequirements, setSpecialRequirements] = useState('');
+  const [showPayment, setShowPayment] = useState(false);
+  const [bookingId, setBookingId] = useState('');
 
   const temples = [
     {
@@ -329,12 +334,38 @@ const Booking = () => {
                 <span>₹{calculateTotal()}</span>
               </div>
             </div>
-            <Button className="w-full" size="lg">
+            <Button 
+              className="w-full" 
+              size="lg"
+              onClick={() => {
+                const tempBookingId = `BK${Date.now()}`;
+                setBookingId(tempBookingId);
+                setShowPayment(true);
+              }}
+            >
               Proceed to Payment
             </Button>
           </CardContent>
         </Card>
       )}
+
+      <UPIPaymentDialog
+        open={showPayment}
+        onClose={() => setShowPayment(false)}
+        amount={calculateTotal()}
+        bookingId={bookingId}
+        onSuccess={() => {
+          toast({
+            title: 'Booking Confirmed!',
+            description: 'Your darshan booking has been successfully confirmed.',
+          });
+          // Reset form
+          setSelectedDate(undefined);
+          setSelectedSlot('');
+          setVisitorCount(2);
+          setSpecialRequirements('');
+        }}
+      />
     </div>
   );
 };
