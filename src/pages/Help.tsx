@@ -8,8 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { 
   HelpCircle, Search, Phone, Mail, MessageSquare, 
-  BookOpen, Video, Download, ExternalLink, Star
+  BookOpen, Video, Download, ExternalLink, Star, Bot
 } from 'lucide-react';
+import { ChatAssistant } from '@/components/help/ChatAssistant';
 
 const Help = () => {
   const { t } = useTranslation();
@@ -172,13 +173,22 @@ const Help = () => {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="faq" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue="ai-chat" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="ai-chat">
+            <Bot className="w-4 h-4 mr-1" />
+            AI Chat
+          </TabsTrigger>
           <TabsTrigger value="faq">FAQ</TabsTrigger>
           <TabsTrigger value="tutorials">Tutorials</TabsTrigger>
           <TabsTrigger value="troubleshooting">Troubleshooting</TabsTrigger>
           <TabsTrigger value="contact">Contact</TabsTrigger>
         </TabsList>
+
+        {/* AI Chat Tab */}
+        <TabsContent value="ai-chat">
+          <ChatAssistant />
+        </TabsContent>
 
         {/* FAQ Tab */}
         <TabsContent value="faq">

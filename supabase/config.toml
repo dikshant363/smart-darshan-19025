@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.upi-payment]
 verify_jwt = false
+
+[functions.chat-assistant]
+verify_jwt = false

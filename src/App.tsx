@@ -18,6 +18,7 @@ import Parking from "./pages/Parking";
 import Emergency from "./pages/Emergency";
 import Notifications from "./pages/Notifications";
 import Help from "./pages/Help";
+import Maps from "./pages/Maps";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -53,6 +54,7 @@ const App = () => {
               <Route path="crowd-monitor" element={<CrowdMonitor />} />
               <Route path="traffic" element={<Traffic />} />
               <Route path="parking" element={<Parking />} />
+              <Route path="maps" element={<Maps />} />
               <Route path="emergency" element={<Emergency />} />
               <Route path="notifications" element={<Notifications />} />
               <Route path="help" element={<Help />} />
