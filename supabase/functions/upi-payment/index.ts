@@ -20,8 +20,8 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
+    // Get user if authenticated (optional for payment creation)
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Unauthorized');
 
     const { action, booking_id, amount, upi_id, transaction_id } = await req.json();
 

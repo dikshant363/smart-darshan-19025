@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, CheckCircle2, XCircle, Copy, ExternalLink } from 'lucide-react';
 import { generateQRCode } from '@/lib/qrcode';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UPIPaymentDialogProps {
   open: boolean;
@@ -31,23 +32,16 @@ export const UPIPaymentDialog = ({ open, onClose, amount, bookingId, onSuccess }
     try {
       setStatus('loading');
       
-      // Create UPI payment request
-      const response = await fetch(
-        `https://aejdnfjanbkokmcbfreg.supabase.co/functions/v1/upi-payment`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            action: 'create',
-            booking_id: bookingId,
-            amount,
-          }),
-        }
-      );
+      // Create UPI payment request using Supabase client
+      const { data, error } = await supabase.functions.invoke('upi-payment', {
+        body: {
+          action: 'create',
+          booking_id: bookingId,
+          amount,
+        },
+      });
 
-      const data = await response.json();
+      if (error) throw error;
       
       if (data.success) {
         setUpiString(data.upi_string);
@@ -85,22 +79,15 @@ export const UPIPaymentDialog = ({ open, onClose, amount, bookingId, onSuccess }
 
   const verifyPayment = async () => {
     try {
-      const response = await fetch(
-        `https://aejdnfjanbkokmcbfreg.supabase.co/functions/v1/upi-payment`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            action: 'verify',
-            booking_id: bookingId,
-            transaction_id: transactionRef,
-          }),
-        }
-      );
+      const { data, error } = await supabase.functions.invoke('upi-payment', {
+        body: {
+          action: 'verify',
+          booking_id: bookingId,
+          transaction_id: transactionRef,
+        },
+      });
 
-      const data = await response.json();
+      if (error) throw error;
       
       if (data.status === 'success') {
         setStatus('success');
