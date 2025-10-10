@@ -68,11 +68,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (error) {
-        toast({
-          title: 'Error',
-          description: error.message,
-          variant: 'destructive',
-        });
+        console.error('OTP Error:', error);
+        
+        // Check for database trigger errors
+        if (error.message?.includes('trigger') || error.message?.includes('database')) {
+          toast({
+            title: 'Setup Required',
+            description: 'Please contact support to complete account setup.',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Error',
+            description: error.message,
+            variant: 'destructive',
+          });
+        }
       } else {
         toast({
           title: 'OTP Sent',
@@ -83,6 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error };
     } catch (error) {
       const authError = error as AuthError;
+      console.error('OTP Exception:', error);
       toast({
         title: 'Error',
         description: 'Failed to send OTP. Please try again.',
