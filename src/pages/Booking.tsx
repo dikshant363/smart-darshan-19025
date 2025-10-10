@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { UPIPaymentDialog } from '@/components/booking/UPIPaymentDialog';
 import { useToast } from '@/hooks/use-toast';
 import somnathImage from '@/assets/somnath-temple.jpg';
+import dwarkaImage from '@/assets/dwarka-temple.jpg';
 
 const Booking = () => {
   const { t } = useTranslation();
@@ -40,7 +41,7 @@ const Booking = () => {
       id: 'dwarka',
       name: t('temple.dwarka'),
       location: 'Dwarka, Gujarat',
-      image: '/placeholder.svg',
+      image: dwarkaImage,
       crowdLevel: 'high',
       price: 75,
       rating: 4.9
