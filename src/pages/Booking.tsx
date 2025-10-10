@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { UPIPaymentDialog } from '@/components/booking/UPIPaymentDialog';
 import { useToast } from '@/hooks/use-toast';
+import somnathImage from '@/assets/somnath-temple.jpg';
 
 const Booking = () => {
   const { t } = useTranslation();
@@ -30,7 +31,7 @@ const Booking = () => {
       id: 'somnath',
       name: t('temple.somnath'),
       location: 'Prabhas Patan, Veraval',
-      image: '/placeholder.svg',
+      image: somnathImage,
       crowdLevel: 'moderate',
       price: 50,
       rating: 4.8
@@ -124,8 +125,12 @@ const Booking = () => {
                     onClick={() => setSelectedTemple(temple.id)}
                   >
                     <CardContent className="p-4">
-                      <div className="aspect-video bg-muted rounded-lg mb-4 flex items-center justify-center">
-                        <MapPin className="w-8 h-8 text-muted-foreground" />
+                      <div className="aspect-video bg-muted rounded-lg mb-4 overflow-hidden">
+                        <img 
+                          src={temple.image} 
+                          alt={temple.name}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
