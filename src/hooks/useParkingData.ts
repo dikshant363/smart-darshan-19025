@@ -38,7 +38,7 @@ export function useParkingData(templeId: string | null) {
     if (!templeId) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('parking_data')
         .select('*')
         .eq('temple_id', templeId)

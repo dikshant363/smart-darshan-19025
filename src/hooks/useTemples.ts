@@ -27,7 +27,7 @@ export function useTemples() {
 
   const loadTemples = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('temples')
         .select('*')
         .eq('is_active', true)
@@ -44,7 +44,7 @@ export function useTemples() {
 
   const getTempleById = async (id: string) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('temples')
         .select('*')
         .eq('id', id)

@@ -38,14 +38,14 @@ export function useCrowdData(templeId: string | null) {
 
     try {
       const [currentResult, predictionsResult] = await Promise.all([
-        supabase
+        (supabase as any)
           .from('crowd_data')
           .select('*')
           .eq('temple_id', templeId)
           .order('recorded_at', { ascending: false })
           .limit(1)
           .maybeSingle(),
-        supabase.rpc('get_crowd_predictions', {
+        (supabase as any).rpc('get_crowd_predictions', {
           p_temple_id: templeId,
           p_days_ahead: 7
         })

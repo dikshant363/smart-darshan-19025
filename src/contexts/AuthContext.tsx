@@ -33,9 +33,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (event === 'SIGNED_IN' && session?.user) {
           setTimeout(async () => {
             try {
-              await supabase.rpc('log_user_activity', {
+              await (supabase as any).rpc('log_user_activity', {
+                p_user_id: session.user.id,
                 p_activity_type: 'login',
-                p_activity_data: { method: 'phone' }
+                p_description: 'User logged in via phone OTP',
+                p_metadata: { method: 'phone' }
               });
               console.log('Activity logged');
             } catch (error) {
@@ -69,9 +71,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         console.error('OTP Error:', error);
-        
-        // Check for database trigger errors
-        if (error.message?.includes('trigger') || error.message?.includes('database')) {
+
+        if ((error as any).code === 'phone_provider_disabled') {
+          toast({
+            title: 'Phone OTP not enabled',
+            description: 'Phone authentication is disabled. Continue as guest or use an alternative login method.',
+            variant: 'destructive',
+          });
+        } else if (error.message?.includes('trigger') || error.message?.includes('database')) {
           toast({
             title: 'Setup Required',
             description: 'Please contact support to complete account setup.',
@@ -140,8 +147,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     try {
       // Log activity before signing out
-      await supabase.rpc('log_user_activity', {
-        p_activity_type: 'logout'
+      await (supabase as any).rpc('log_user_activity', {
+        p_user_id: user?.id,
+        p_activity_type: 'logout',
+        p_description: 'User signed out'
       });
       
       await supabase.auth.signOut();

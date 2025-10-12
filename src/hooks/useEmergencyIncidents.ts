@@ -48,14 +48,14 @@ export function useEmergencyIncidents() {
 
   const loadIncidents = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('emergency_incidents')
         .select('*, temples(*)')
         .order('reported_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
-      setIncidents(data || []);
+      setIncidents((data || []) as any);
     } catch (error) {
       console.error('Failed to load emergency incidents:', error);
     } finally {
@@ -86,7 +86,7 @@ export function useEmergencyIncidents() {
         insertData.location = `POINT(${incidentData.location.longitude} ${incidentData.location.latitude})`;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('emergency_incidents')
         .insert(insertData)
         .select('*, temples(*)')
@@ -99,9 +99,11 @@ export function useEmergencyIncidents() {
         description: 'Authorities have been notified',
       });
 
-      await supabase.rpc('log_user_activity', {
+      await (supabase as any).rpc('log_user_activity', {
+        p_user_id: user.id,
         p_activity_type: 'emergency_reported',
-        p_activity_data: { 
+        p_description: incidentData.description || 'Emergency reported',
+        p_metadata: { 
           incident_id: data.id, 
           incident_type: incidentData.incident_type,
           severity: incidentData.severity 

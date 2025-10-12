@@ -29,7 +29,7 @@ export function useBookings() {
 
   const loadBookings = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('bookings')
         .select('*, temples(*)')
         .order('booking_date', { ascending: false });
@@ -59,7 +59,7 @@ export function useBookings() {
 
       const qr_code = crypto.randomUUID();
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('bookings')
         .insert({
           user_id: user.id,
@@ -95,7 +95,7 @@ export function useBookings() {
 
   const cancelBooking = async (bookingId: string, reason?: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('bookings')
         .update({
           status: 'cancelled',

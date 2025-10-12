@@ -26,7 +26,7 @@ export function useAnalytics(templeId: string | null, dateRange?: { start: strin
     if (!templeId) return;
 
     try {
-      let query = supabase
+      let query = (supabase as any)
         .from('booking_analytics')
         .select('*')
         .eq('temple_id', templeId);

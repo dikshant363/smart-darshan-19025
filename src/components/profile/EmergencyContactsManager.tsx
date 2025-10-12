@@ -40,7 +40,7 @@ export function EmergencyContactsManager({ userId }: EmergencyContactsManagerPro
 
   const loadContacts = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('user_emergency_contacts')
         .select('*')
         .eq('user_id', userId)
@@ -71,7 +71,7 @@ export function EmergencyContactsManager({ userId }: EmergencyContactsManagerPro
 
     setSaving(true);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('user_emergency_contacts')
         .insert({
           user_id: userId,
@@ -104,7 +104,7 @@ export function EmergencyContactsManager({ userId }: EmergencyContactsManagerPro
 
   const handleDeleteContact = async (contactId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('user_emergency_contacts')
         .delete()
         .eq('id', contactId);
@@ -129,13 +129,13 @@ export function EmergencyContactsManager({ userId }: EmergencyContactsManagerPro
   const handleSetPrimary = async (contactId: string) => {
     try {
       // Remove primary from all contacts
-      await supabase
+      await (supabase as any)
         .from('user_emergency_contacts')
         .update({ is_primary: false })
         .eq('user_id', userId);
 
       // Set new primary
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('user_emergency_contacts')
         .update({ is_primary: true })
         .eq('id', contactId);

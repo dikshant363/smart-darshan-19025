@@ -57,7 +57,7 @@ const Profile = () => {
 
   const loadProfile = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('profiles')
         .select('*')
         .eq('id', user?.id)
@@ -95,7 +95,7 @@ const Profile = () => {
 
     setSaving(true);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('profiles')
         .update({
           display_name: profileData.display_name,
@@ -115,8 +115,10 @@ const Profile = () => {
         description: 'Profile updated successfully',
       });
 
-      await supabase.rpc('log_user_activity', {
+      await (supabase as any).rpc('log_user_activity', {
+        p_user_id: user.id,
         p_activity_type: 'profile_update',
+        p_description: 'Profile updated'
       });
     } catch (error: any) {
       toast({

@@ -25,7 +25,7 @@ export function useTrafficData(templeId: string | null) {
     if (!templeId) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('traffic_data')
         .select('*')
         .eq('temple_id', templeId)

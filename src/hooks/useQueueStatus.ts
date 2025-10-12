@@ -32,7 +32,7 @@ export function useQueueStatus(bookingId: string | null) {
     if (!bookingId) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('queue_status')
         .select('*')
         .eq('booking_id', bookingId)
