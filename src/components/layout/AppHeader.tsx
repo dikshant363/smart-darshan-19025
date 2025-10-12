@@ -1,6 +1,7 @@
 import { Menu, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 interface AppHeaderProps {
   onMenuClick: () => void;
@@ -8,6 +9,7 @@ interface AppHeaderProps {
 
 const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
@@ -29,7 +31,12 @@ const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
         </div>
         
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="relative">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="relative"
+            onClick={() => navigate('/notifications')}
+          >
             <Bell className="h-5 w-5" />
             <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full" />
           </Button>

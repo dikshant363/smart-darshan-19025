@@ -1,12 +1,30 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Users, Cloud, Video, MapPin, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const Dashboard = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [selectedTemple, setSelectedTemple] = useState('somnath');
+
+  const temples = [
+    { id: 'somnath', name: t('temple.somnath'), location: 'Saurashtra, Gujarat' },
+    { id: 'dwarka', name: t('temple.dwarka'), location: 'Dwarka, Gujarat' },
+    { id: 'ambaji', name: t('temple.ambaji'), location: 'Banaskantha, Gujarat' },
+    { id: 'pavagadh', name: t('temple.pavagadh'), location: 'Panchmahal, Gujarat' },
+  ];
+
+  const currentTemple = temples.find(t => t.id === selectedTemple) || temples[0];
 
   const quickActions = [
     {
@@ -53,16 +71,25 @@ const Dashboard = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold">{t('temple.somnath')}</h3>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <h3 className="font-semibold">{currentTemple.name}</h3>
               <p className="text-sm text-muted-foreground">
-                Saurashtra, Gujarat
+                {currentTemple.location}
               </p>
             </div>
-            <Button variant="outline" size="sm">
-              Change
-            </Button>
+            <Select value={selectedTemple} onValueChange={setSelectedTemple}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select temple" />
+              </SelectTrigger>
+              <SelectContent>
+                {temples.map((temple) => (
+                  <SelectItem key={temple.id} value={temple.id}>
+                    {temple.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
