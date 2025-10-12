@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import somnathImage from '@/assets/somnath-temple.jpg';
 import dwarkaImage from '@/assets/dwarka-temple.jpg';
 import ambajiImage from '@/assets/ambaji-temple.jpg';
+import pavagradhImage from '@/assets/pavagadh-temple.jpg';
 
 const Booking = () => {
   const { t } = useTranslation();
@@ -60,7 +61,7 @@ const Booking = () => {
       id: 'pavagadh',
       name: t('temple.pavagadh'),
       location: 'Panchmahal, Gujarat',
-      image: '/placeholder.svg',
+      image: pavagradhImage,
       crowdLevel: 'moderate',
       price: 60,
       rating: 4.6
