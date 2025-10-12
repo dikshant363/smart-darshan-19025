@@ -15,6 +15,7 @@ import { UPIPaymentDialog } from '@/components/booking/UPIPaymentDialog';
 import { useToast } from '@/hooks/use-toast';
 import somnathImage from '@/assets/somnath-temple.jpg';
 import dwarkaImage from '@/assets/dwarka-temple.jpg';
+import ambajiImage from '@/assets/ambaji-temple.jpg';
 
 const Booking = () => {
   const { t } = useTranslation();
@@ -50,7 +51,7 @@ const Booking = () => {
       id: 'ambaji',
       name: t('temple.ambaji'),
       location: 'Banaskantha, Gujarat',
-      image: '/placeholder.svg',
+      image: ambajiImage,
       crowdLevel: 'low',
       price: 40,
       rating: 4.7
