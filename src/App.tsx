@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import TempleInfo from "./pages/TempleInfo";
 import Booking from "./pages/Booking";
+import BookingHistory from "./pages/BookingHistory";
 import QueueStatus from "./pages/QueueStatus";
 import CrowdMonitor from "./pages/CrowdMonitor";
 import Traffic from "./pages/Traffic";
@@ -50,6 +51,7 @@ const App = () => {
               <Route path="profile" element={<Profile />} />
               <Route path="temple-info/:templeId?" element={<TempleInfo />} />
               <Route path="booking" element={<Booking />} />
+              <Route path="booking-history" element={<BookingHistory />} />
               <Route path="queue-status" element={<QueueStatus />} />
               <Route path="crowd-monitor" element={<CrowdMonitor />} />
               <Route path="traffic" element={<Traffic />} />
