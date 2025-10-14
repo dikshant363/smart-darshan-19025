@@ -12,10 +12,10 @@ import { useAuth } from '@/contexts/AuthContext';
 const Login = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { user, signInWithOtp, verifyOtp, signInAsGuest, loading: authLoading } = useAuth();
-  const [phone, setPhone] = useState('');
-  const [otp, setOTP] = useState('');
-  const [showOTP, setShowOTP] = useState(false);
+  const { user, loading: authLoading } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedTemple, setSelectedTemple] = useState('');
   const [loading, setLoading] = useState(false);
@@ -45,32 +45,32 @@ const Login = () => {
     i18n.changeLanguage(langCode);
   };
 
-  const handleSendOTP = async () => {
-    if (phone.length < 10) return;
-    
-    // Format phone number to E.164 format
-    const formattedPhone = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g, '')}`;
+  const handleAuth = async () => {
+    if (!email || !password) return;
     
     setLoading(true);
-    const { error } = await signInWithOtp(formattedPhone);
-    setLoading(false);
-    
-    if (!error) {
-      setShowOTP(true);
-    }
-  };
-
-  const handleLogin = async () => {
-    if (otp.length !== 6) return;
-    
-    const formattedPhone = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g, '')}`;
-    
-    setLoading(true);
-    const { error } = await verifyOtp(formattedPhone, otp);
-    setLoading(false);
-    
-    if (!error) {
-      navigate('/dashboard');
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (error) throw error;
+        navigate('/dashboard');
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        navigate('/dashboard');
+      }
+    } catch (error: any) {
+      console.error('Auth error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -134,75 +134,53 @@ const Login = () => {
             </Select>
           </div>
 
-          {/* Phone Input */}
+          {/* Email Input */}
           <div className="space-y-2">
             <label className="text-sm font-medium flex items-center gap-2">
               <Smartphone className="w-4 h-4" />
-              {t('login.phone')}
+              Email
             </label>
-            <div className="flex gap-2">
-              <Input
-                type="tel"
-                placeholder="+91 98765 43210"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="flex-1"
-                disabled={showOTP || loading || authLoading}
-              />
-              {!showOTP && (
-                <Button 
-                  onClick={handleSendOTP} 
-                  disabled={phone.length < 10 || loading || authLoading}
-                >
-                  {loading ? 'Sending...' : 'Send OTP'}
-                </Button>
-              )}
-            </div>
+            <Input
+              type="email"
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading || authLoading}
+            />
           </div>
 
-          {/* OTP Input */}
-          {showOTP && (
-            <div className="space-y-4">
-              <label className="text-sm font-medium">
-                {t('login.otp')}
-              </label>
-              <div className="flex justify-center">
-                <InputOTP
-                  maxLength={6}
-                  value={otp}
-                  onChange={(value) => setOTP(value)}
-                  disabled={loading || authLoading}
-                >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-              <Button 
-                onClick={handleLogin} 
-                disabled={otp.length !== 6 || loading || authLoading}
-                className="w-full"
-              >
-                {loading ? 'Verifying...' : t('common.continue')}
-              </Button>
-              <Button 
-                onClick={() => {
-                  setShowOTP(false);
-                  setOTP('');
-                }} 
-                variant="outline"
-                className="w-full"
-                disabled={loading || authLoading}
-              >
-                Change Phone Number
-              </Button>
-            </div>
-          )}
+          {/* Password Input */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              Password
+            </label>
+            <Input
+              type="password"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading || authLoading}
+            />
+          </div>
+
+          {/* Auth Button */}
+          <Button 
+            onClick={handleAuth} 
+            disabled={!email || !password || loading || authLoading}
+            className="w-full"
+          >
+            {loading ? 'Processing...' : isSignUp ? 'Sign Up' : 'Sign In'}
+          </Button>
+
+          {/* Toggle Sign Up / Sign In */}
+          <Button 
+            onClick={() => setIsSignUp(!isSignUp)} 
+            variant="link"
+            className="w-full"
+            disabled={loading || authLoading}
+          >
+            {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
+          </Button>
 
           {/* Guest Login */}
           <div className="pt-4 border-t">
