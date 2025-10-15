@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -6,25 +7,26 @@ import { ThemeProvider } from "next-themes";
 import './lib/i18n'; // Initialize i18n
 import { AppProvider } from './contexts/AppContext';
 import { AuthProvider } from './contexts/AuthContext';
-import AppLayout from "./components/layout/AppLayout";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Profile from "./pages/Profile";
-import TempleInfo from "./pages/TempleInfo";
-import Booking from "./pages/Booking";
-import BookingHistory from "./pages/BookingHistory";
-import QueueStatus from "./pages/QueueStatus";
-import CrowdMonitor from "./pages/CrowdMonitor";
-import Traffic from "./pages/Traffic";
-import Parking from "./pages/Parking";
-import Emergency from "./pages/Emergency";
-import Notifications from "./pages/Notifications";
-import Help from "./pages/Help";
-import Settings from "./pages/Settings";
-import About from "./pages/About";
-import Maps from "./pages/Maps";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
+
+// Lazy load pages for better performance
+const AppLayout = lazy(() => import("./components/layout/AppLayout"));
+const Login = lazy(() => import("./pages/Login"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Profile = lazy(() => import("./pages/Profile"));
+const TempleInfo = lazy(() => import("./pages/TempleInfo"));
+const Booking = lazy(() => import("./pages/Booking"));
+const BookingHistory = lazy(() => import("./pages/BookingHistory"));
+const QueueStatus = lazy(() => import("./pages/QueueStatus"));
+const CrowdMonitor = lazy(() => import("./pages/CrowdMonitor"));
+const Traffic = lazy(() => import("./pages/Traffic"));
+const Parking = lazy(() => import("./pages/Parking"));
+const Emergency = lazy(() => import("./pages/Emergency"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const Help = lazy(() => import("./pages/Help"));
+const Settings = lazy(() => import("./pages/Settings"));
+const About = lazy(() => import("./pages/About"));
+const Maps = lazy(() => import("./pages/Maps"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,7 +46,8 @@ const App = () => {
             <AppProvider>
               <Toaster />
               <Sonner />
-            <Routes>
+              <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>}>
+                <Routes>
             {/* Redirect root to login */}
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
@@ -68,9 +71,10 @@ const App = () => {
               <Route path="about" element={<About />} />
             </Route>
 
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+                  {/* Catch-all route */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
             </AppProvider>
           </AuthProvider>
         </ThemeProvider>
