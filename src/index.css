@@ -20,10 +20,10 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 210 100% 20%;
 
-    /* Primary: Saffron Orange */
-    --primary: 30 100% 60%;
+    /* Primary: Saffron Orange (darkened for WCAG AA contrast 4.5:1) */
+    --primary: 30 100% 45%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 30 100% 70%;
+    --primary-glow: 30 100% 55%;
 
     /* Secondary: Deep Blue */
     --secondary: 210 100% 20%;
@@ -42,7 +42,7 @@ All colors MUST be HSL.
 
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 30 100% 60%;
+    --ring: 30 100% 45%;
 
     --radius: 0.75rem;
 
@@ -84,10 +84,10 @@ All colors MUST be HSL.
     --popover: 210 100% 6%;
     --popover-foreground: 0 0% 95%;
 
-    /* Primary: Saffron Orange (darker) */
-    --primary: 30 90% 55%;
+    /* Primary: Saffron Orange (adjusted for dark mode) */
+    --primary: 30 95% 50%;
     --primary-foreground: 210 100% 4%;
-    --primary-glow: 30 85% 65%;
+    --primary-glow: 30 90% 60%;
 
     /* Secondary: Deep Blue (lighter) */
     --secondary: 210 80% 25%;
@@ -105,7 +105,7 @@ All colors MUST be HSL.
 
     --border: 210 50% 15%;
     --input: 210 50% 15%;
-    --ring: 30 90% 55%;
+    --ring: 30 95% 50%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
