@@ -52,6 +52,21 @@ const Dashboard = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
+      {/* Greeting Section */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 p-8 animate-fade-in">
+        <div className="relative z-10 text-center space-y-3">
+          <div className="inline-block animate-scale-in">
+            <h1 className="text-4xl md:text-5xl font-poppins font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              Namaste! 🙏
+            </h1>
+          </div>
+          <p className="text-lg md:text-xl text-muted-foreground font-medium animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            Welcome to your spiritual journey
+          </p>
+        </div>
+        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+      </div>
+
       {/* Temple Selector */}
       <Card>
         <CardHeader>
