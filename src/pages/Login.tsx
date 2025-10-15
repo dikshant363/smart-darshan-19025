@@ -15,6 +15,7 @@ const Login = () => {
   const { user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedTemple, setSelectedTemple] = useState('');
@@ -46,7 +47,7 @@ const Login = () => {
   };
 
   const handleAuth = async () => {
-    if (!email || !password) return;
+    if (!email || !password || !phoneNumber) return;
     
     setLoading(true);
     try {
@@ -134,11 +135,26 @@ const Login = () => {
             </Select>
           </div>
 
-          {/* Email Input */}
+          {/* Mobile Number Input */}
           <div className="space-y-2">
             <label className="text-sm font-medium flex items-center gap-2">
               <Smartphone className="w-4 h-4" />
-              Email
+              {t('login.phone')} *
+            </label>
+            <Input
+              type="tel"
+              placeholder="+91 XXXXX XXXXX"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              disabled={loading || authLoading}
+              required
+            />
+          </div>
+
+          {/* Email Input */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              Email *
             </label>
             <Input
               type="email"
@@ -146,13 +162,14 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading || authLoading}
+              required
             />
           </div>
 
           {/* Password Input */}
           <div className="space-y-2">
             <label className="text-sm font-medium">
-              Password
+              Password *
             </label>
             <Input
               type="password"
@@ -160,13 +177,14 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading || authLoading}
+              required
             />
           </div>
 
           {/* Auth Button */}
           <Button 
             onClick={handleAuth} 
-            disabled={!email || !password || loading || authLoading}
+            disabled={!email || !password || !phoneNumber || loading || authLoading}
             className="w-full"
           >
             {loading ? 'Processing...' : isSignUp ? 'Sign Up' : 'Sign In'}
