@@ -1,7 +1,8 @@
-import { Menu, Bell, User } from 'lucide-react';
+import { Menu, Bell, User, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from 'next-themes';
 import omLogo from '@/assets/om-logo.png';
 
 interface AppHeaderProps {
@@ -11,6 +12,7 @@ interface AppHeaderProps {
 const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
 
   return (
     <header className="sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
@@ -33,6 +35,17 @@ const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
         </div>
         
         <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
+          </Button>
           <Button 
             variant="ghost" 
             size="icon" 
