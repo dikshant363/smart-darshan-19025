@@ -144,7 +144,7 @@ const Login = () => {
               {t('login.language')}
             </label>
             <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Select language">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -164,7 +164,7 @@ const Login = () => {
               {t('login.temple')}
             </label>
             <Select value={selectedTemple} onValueChange={setSelectedTemple}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Select temple">
                 <SelectValue placeholder={t('common.select')} />
               </SelectTrigger>
               <SelectContent>
