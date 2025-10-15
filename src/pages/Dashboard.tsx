@@ -52,16 +52,6 @@ const Dashboard = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      {/* Greeting Section */}
-      <div className="text-center py-6">
-        <h1 className="text-3xl font-poppins font-bold text-primary mb-2">
-          {t('dashboard.greeting')}! 🙏
-        </h1>
-        <p className="text-muted-foreground">
-          Welcome to your spiritual journey
-        </p>
-      </div>
-
       {/* Temple Selector */}
       <Card>
         <CardHeader>
