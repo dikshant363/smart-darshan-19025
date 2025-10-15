@@ -103,28 +103,6 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Weather Widget */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Cloud className="w-5 h-5" />
-            {t('dashboard.weather')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold">28°C</p>
-              <p className="text-sm text-muted-foreground">Partly Cloudy</p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground">Crowd Impact</p>
-              <p className="text-sm font-medium text-green-600">Low</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Current Status */}
       <Card>
         <CardHeader>
