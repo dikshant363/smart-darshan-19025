@@ -1,7 +1,8 @@
-import { Menu, Bell } from 'lucide-react';
+import { Menu, Bell, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import omLogo from '@/assets/om-logo.png';
 
 interface AppHeaderProps {
   onMenuClick: () => void;
@@ -23,7 +24,8 @@ const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
           >
             <Menu className="h-6 w-6" />
           </Button>
-          <div>
+          <div className="flex items-center gap-2">
+            <img src={omLogo} alt="Om Logo" className="h-8 w-8 object-contain" />
             <h1 className="text-xl font-poppins font-semibold text-primary">
               Smart Darshan
             </h1>
@@ -39,6 +41,13 @@ const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
           >
             <Bell className="h-5 w-5" />
             <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => navigate('/profile')}
+          >
+            <User className="h-5 w-5" />
           </Button>
         </div>
       </div>
