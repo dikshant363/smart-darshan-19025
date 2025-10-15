@@ -1,10 +1,27 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const createBookingSchema = z.object({
+  temple_id: z.string().uuid({ message: "Invalid temple ID format" }),
+  booking_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Invalid date format. Use YYYY-MM-DD" }),
+  time_slot: z.string().regex(/^\d{2}:\d{2}$/, { message: "Invalid time format. Use HH:MM" }),
+  visitor_count: z.number().int().min(1, { message: "At least 1 visitor required" }).max(50, { message: "Maximum 50 visitors allowed" }),
+  special_requirements: z.string().max(500, { message: "Special requirements must be less than 500 characters" }).optional(),
+});
+
+const updateBookingSchema = z.object({
+  id: z.string().uuid({ message: "Invalid booking ID format" }),
+  booking_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  time_slot: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+  visitor_count: z.number().int().min(1).max(50).optional(),
+  special_requirements: z.string().max(500).optional(),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -27,6 +44,14 @@ serve(async (req) => {
     // GET - Fetch bookings
     if (method === 'GET') {
       if (bookingId) {
+        // Validate UUID format
+        if (!z.string().uuid().safeParse(bookingId).success) {
+          return new Response(JSON.stringify({ error: 'Invalid booking ID format' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
         const { data, error } = await supabase
           .from('bookings')
           .select('*, temples(*)')
@@ -63,7 +88,20 @@ serve(async (req) => {
       if (!user) throw new Error('Unauthorized');
 
       const body = await req.json();
-      const { temple_id, booking_date, time_slot, visitor_count, special_requirements } = body;
+      
+      // Validate input
+      const validationResult = createBookingSchema.safeParse(body);
+      if (!validationResult.success) {
+        return new Response(JSON.stringify({ 
+          error: 'Validation failed', 
+          details: validationResult.error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const { temple_id, booking_date, time_slot, visitor_count, special_requirements } = validationResult.data;
 
       // Generate QR code data (simple UUID for now)
       const qr_code = crypto.randomUUID();
@@ -87,9 +125,13 @@ serve(async (req) => {
 
       // Log activity
       await supabase.rpc('log_user_activity', {
+        p_user_id: user.id,
         p_activity_type: 'booking_created',
-        p_activity_data: { booking_id: data.id, temple_id }
+        p_description: `Created booking for temple ${temple_id}`,
+        p_metadata: { booking_id: data.id, temple_id }
       });
+
+      console.log('Booking created successfully:', data.id);
 
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -103,7 +145,20 @@ serve(async (req) => {
       if (!user) throw new Error('Unauthorized');
 
       const body = await req.json();
-      const { id, ...updates } = body;
+      
+      // Validate input
+      const validationResult = updateBookingSchema.safeParse(body);
+      if (!validationResult.success) {
+        return new Response(JSON.stringify({ 
+          error: 'Validation failed', 
+          details: validationResult.error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const { id, ...updates } = validationResult.data;
 
       const { data, error } = await supabase
         .from('bookings')
@@ -115,6 +170,8 @@ serve(async (req) => {
 
       if (error) throw error;
 
+      console.log('Booking updated successfully:', id);
+
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -125,7 +182,20 @@ serve(async (req) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Unauthorized');
 
-      if (!bookingId) throw new Error('Booking ID required');
+      if (!bookingId) {
+        return new Response(JSON.stringify({ error: 'Booking ID required' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Validate UUID format
+      if (!z.string().uuid().safeParse(bookingId).success) {
+        return new Response(JSON.stringify({ error: 'Invalid booking ID format' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
 
       const { error } = await supabase
         .from('bookings')
@@ -138,6 +208,8 @@ serve(async (req) => {
 
       if (error) throw error;
 
+      console.log('Booking cancelled successfully:', bookingId);
+
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -147,9 +219,23 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Booking API error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
+    
+    // Generic error message for clients
+    let userMessage = 'An error occurred processing your booking';
+    let statusCode = 500;
+    
+    if (error instanceof Error) {
+      if (error.message.includes('Unauthorized')) {
+        userMessage = 'Authentication required';
+        statusCode = 401;
+      } else if (error.message.includes('duplicate')) {
+        userMessage = 'A booking with this information already exists';
+        statusCode = 409;
+      }
+    }
+    
+    return new Response(JSON.stringify({ error: userMessage }), {
+      status: statusCode,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

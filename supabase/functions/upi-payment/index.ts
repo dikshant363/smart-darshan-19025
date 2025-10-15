@@ -1,10 +1,30 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const createPaymentSchema = z.object({
+  action: z.literal('create'),
+  booking_id: z.string().uuid({ message: "Invalid booking ID format" }),
+  amount: z.number().positive({ message: "Amount must be positive" }).max(100000, { message: "Amount exceeds maximum limit" }),
+});
+
+const verifyPaymentSchema = z.object({
+  action: z.literal('verify'),
+  booking_id: z.string().uuid({ message: "Invalid booking ID format" }),
+  transaction_id: z.string().min(1, { message: "Transaction ID required" }),
+});
+
+const updatePaymentSchema = z.object({
+  action: z.literal('update'),
+  transaction_id: z.string().min(1, { message: "Transaction ID required" }),
+  status: z.enum(['pending', 'success', 'failed'], { errorMap: () => ({ message: "Invalid status" }) }),
+  utr_number: z.string().optional(),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -20,13 +40,55 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    // Get user if authenticated (optional for payment creation)
+    // Get authenticated user
     const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'Authentication required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-    const { action, booking_id, amount, upi_id, transaction_id } = await req.json();
+    const body = await req.json();
+    const { action } = body;
 
     // Generate UPI payment request
     if (action === 'create') {
+      // Validate input
+      const validationResult = createPaymentSchema.safeParse(body);
+      if (!validationResult.success) {
+        return new Response(JSON.stringify({ 
+          error: 'Validation failed', 
+          details: validationResult.error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const { booking_id, amount } = validationResult.data;
+
+      // Verify booking belongs to authenticated user
+      const { data: booking, error: bookingError } = await supabase
+        .from('bookings')
+        .select('user_id')
+        .eq('id', booking_id)
+        .single();
+
+      if (bookingError || !booking) {
+        return new Response(JSON.stringify({ error: 'Booking not found' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (booking.user_id !== user.id) {
+        return new Response(JSON.stringify({ error: 'Unauthorized - booking does not belong to user' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       // UPI payment string format
       const payeeAddress = Deno.env.get('UPI_MERCHANT_ID') || 'temple@upi';
       const payeeName = 'Smart Darshan';
@@ -65,6 +127,34 @@ serve(async (req) => {
 
     // Verify UPI payment
     if (action === 'verify') {
+      // Validate input
+      const validationResult = verifyPaymentSchema.safeParse(body);
+      if (!validationResult.success) {
+        return new Response(JSON.stringify({ 
+          error: 'Validation failed', 
+          details: validationResult.error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const { booking_id, transaction_id } = validationResult.data;
+
+      // Verify booking belongs to authenticated user
+      const { data: booking, error: bookingError } = await supabase
+        .from('bookings')
+        .select('user_id')
+        .eq('id', booking_id)
+        .single();
+
+      if (bookingError || !booking || booking.user_id !== user.id) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       const { data: payment, error: fetchError } = await supabase
         .from('payment_transactions')
         .select('*')
@@ -74,8 +164,6 @@ serve(async (req) => {
 
       if (fetchError) throw fetchError;
 
-      // In production, verify with UPI Gateway API
-      // For now, manual verification
       return new Response(JSON.stringify({
         success: true,
         status: payment.status,
@@ -86,7 +174,41 @@ serve(async (req) => {
 
     // Update payment status (webhook endpoint)
     if (action === 'update') {
-      const { status, utr_number } = await req.json();
+      // Validate input
+      const validationResult = updatePaymentSchema.safeParse(body);
+      if (!validationResult.success) {
+        return new Response(JSON.stringify({ 
+          error: 'Validation failed', 
+          details: validationResult.error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const { transaction_id, status, utr_number } = validationResult.data;
+
+      // Get payment to verify booking ownership
+      const { data: payment } = await supabase
+        .from('payment_transactions')
+        .select('booking_id')
+        .eq('transaction_reference', transaction_id)
+        .single();
+
+      if (payment) {
+        const { data: booking } = await supabase
+          .from('bookings')
+          .select('user_id')
+          .eq('id', payment.booking_id)
+          .single();
+
+        if (!booking || booking.user_id !== user.id) {
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      }
 
       const { error: updateError } = await supabase
         .from('payment_transactions')
@@ -100,13 +222,16 @@ serve(async (req) => {
       if (updateError) throw updateError;
 
       // Update booking status if payment successful
-      if (status === 'success') {
+      if (status === 'success' && payment) {
         await supabase
           .from('bookings')
-          .update({ status: 'confirmed' })
-          .eq('id', booking_id);
+          .update({ 
+            status: 'confirmed',
+            payment_status: 'completed'
+          })
+          .eq('id', payment.booking_id);
 
-        console.log('Payment confirmed for booking:', booking_id);
+        console.log('Payment confirmed for booking:', payment.booking_id);
       }
 
       return new Response(JSON.stringify({ success: true }), {
@@ -114,13 +239,27 @@ serve(async (req) => {
       });
     }
 
-    return new Response('Invalid action', { status: 400, headers: corsHeaders });
+    return new Response(JSON.stringify({ error: 'Invalid action' }), { 
+      status: 400, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
 
   } catch (error) {
     console.error('UPI payment error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
+    
+    // Generic error message for clients
+    let userMessage = 'An error occurred processing your payment';
+    let statusCode = 500;
+    
+    if (error instanceof Error) {
+      if (error.message.includes('Unauthorized') || error.message.includes('Authentication')) {
+        userMessage = 'Authentication required';
+        statusCode = 401;
+      }
+    }
+    
+    return new Response(JSON.stringify({ error: userMessage }), {
+      status: statusCode,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

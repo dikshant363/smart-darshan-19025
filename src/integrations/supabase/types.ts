@@ -584,6 +584,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_notification: {
+        Args: {
+          p_data?: Json
+          p_message: string
+          p_priority?: string
+          p_title: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       get_crowd_predictions: {
         Args: { p_days_ahead?: number; p_temple_id: string }
         Returns: {
