@@ -169,10 +169,9 @@ serve(async (req) => {
       await supabase.rpc('log_user_activity', {
         p_user_id: user.id,
         p_activity_type: 'emergency_reported',
-        p_description: `Reported ${severity} ${incident_type} incident`,
+        p_description: `Reported ${severity} emergency incident`,
         p_metadata: { 
-          incident_id: data.id, 
-          incident_type,
+          incident_id: data.id,
           severity 
         }
       });
@@ -195,8 +194,6 @@ serve(async (req) => {
           });
         }
       }
-
-      console.log('Emergency incident created:', data.id);
 
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -248,8 +245,6 @@ serve(async (req) => {
         .single();
 
       if (error) throw error;
-
-      console.log('Emergency incident updated:', id);
 
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

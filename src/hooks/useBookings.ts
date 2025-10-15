@@ -28,10 +28,14 @@ export function useBookings() {
   }, [user]);
 
   const loadBookings = async () => {
+    if (!user) return;
+
+    setLoading(true);
     try {
       const { data, error } = await (supabase as any)
         .from('bookings')
         .select('*, temples(*)')
+        .eq('user_id', user.id)
         .order('booking_date', { ascending: false });
 
       if (error) throw error;

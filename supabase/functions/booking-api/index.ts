@@ -150,11 +150,9 @@ serve(async (req) => {
       await supabase.rpc('log_user_activity', {
         p_user_id: user.id,
         p_activity_type: 'booking_created',
-        p_description: `Created booking for temple ${temple_id}`,
-        p_metadata: { booking_id: data.id, temple_id }
+        p_description: `Created booking for temple`,
+        p_metadata: { booking_id: data.id }
       });
-
-      console.log('Booking created successfully:', data.id);
 
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -193,8 +191,6 @@ serve(async (req) => {
 
       if (error) throw error;
 
-      console.log('Booking updated successfully:', id);
-
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -230,8 +226,6 @@ serve(async (req) => {
         .eq('user_id', user.id);
 
       if (error) throw error;
-
-      console.log('Booking cancelled successfully:', bookingId);
 
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

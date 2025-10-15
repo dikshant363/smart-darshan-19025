@@ -136,8 +136,6 @@ serve(async (req) => {
 
       if (paymentError) throw paymentError;
 
-      console.log('UPI payment request created:', transactionRef);
-
       return new Response(JSON.stringify({
         success: true,
         transaction_reference: transactionRef,
@@ -253,8 +251,6 @@ serve(async (req) => {
             payment_status: 'completed'
           })
           .eq('id', payment.booking_id);
-
-        console.log('Payment confirmed for booking:', payment.booking_id);
       }
 
       return new Response(JSON.stringify({ success: true }), {

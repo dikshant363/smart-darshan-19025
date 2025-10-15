@@ -47,8 +47,6 @@ serve(async (req) => {
 
     const { user_id, title, message, type, priority, data } = validationResult.data;
 
-    console.log('Creating notification:', { user_id, title, type, priority });
-
     // Use the SECURITY DEFINER function to create notification
     const { data: notificationId, error: dbError } = await supabaseClient
       .rpc('create_notification', {
@@ -61,11 +59,8 @@ serve(async (req) => {
       });
 
     if (dbError) {
-      console.error('Database error:', dbError);
       throw dbError;
     }
-
-    console.log('Notification created:', notificationId);
 
     // TODO: Integrate with push notification service (Firebase, OneSignal, etc.)
     // For now, we're just storing in database for in-app notifications

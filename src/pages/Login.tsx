@@ -21,7 +21,7 @@ const phoneSchema = z.string()
 const Login = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { user, loading: authLoading, signInAsGuest } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -104,18 +104,6 @@ const Login = () => {
         description: error.message || 'Failed to authenticate. Please try again.',
         variant: 'destructive'
       });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGuestLogin = async () => {
-    setLoading(true);
-    try {
-      await signInAsGuest();
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Guest login error:', error);
     } finally {
       setLoading(false);
     }
@@ -243,18 +231,6 @@ const Login = () => {
           >
             {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
           </Button>
-
-          {/* Guest Login */}
-          <div className="pt-4 border-t">
-            <Button
-              variant="outline"
-              onClick={handleGuestLogin}
-              className="w-full"
-              disabled={loading || authLoading}
-            >
-              {loading ? 'Loading...' : t('login.guest')}
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>

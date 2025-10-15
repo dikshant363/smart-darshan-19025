@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, Plus, X, Loader2, Star } from 'lucide-react';
+import { emergencyContactSchema } from '@/lib/validation';
 
 interface EmergencyContact {
   id: string;
@@ -60,10 +61,14 @@ export function EmergencyContactsManager({ userId }: EmergencyContactsManagerPro
   };
 
   const handleAddContact = async () => {
-    if (!newContact.name || !newContact.phone || !newContact.relationship) {
+    // Validate input using Zod schema
+    const validationResult = emergencyContactSchema.safeParse(newContact);
+    
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
       toast({
-        title: 'Missing Information',
-        description: 'Please fill in name, phone, and relationship',
+        title: 'Validation Error',
+        description: firstError.message,
         variant: 'destructive',
       });
       return;
@@ -75,10 +80,10 @@ export function EmergencyContactsManager({ userId }: EmergencyContactsManagerPro
         .from('user_emergency_contacts')
         .insert({
           user_id: userId,
-          name: newContact.name,
-          relationship: newContact.relationship,
-          phone: newContact.phone,
-          email: newContact.email || null,
+          name: validationResult.data.name,
+          relationship: validationResult.data.relationship,
+          phone: validationResult.data.phone,
+          email: validationResult.data.email || null,
           is_primary: contacts.length === 0,
         });
 

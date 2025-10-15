@@ -47,10 +47,14 @@ export function useEmergencyIncidents() {
   });
 
   const loadIncidents = async () => {
+    if (!user) return;
+
+    setLoading(true);
     try {
       const { data, error } = await (supabase as any)
         .from('emergency_incidents')
         .select('*, temples(*)')
+        .eq('user_id', user.id)
         .order('reported_at', { ascending: false })
         .limit(50);
 

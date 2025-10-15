@@ -10,7 +10,6 @@ interface AuthContextType {
   signInWithOtp: (phone: string) => Promise<{ error: AuthError | null }>;
   verifyOtp: (phone: string, token: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
-  signInAsGuest: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -168,39 +167,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signInAsGuest = async () => {
-    try {
-      // Create anonymous session
-      const { data, error } = await supabase.auth.signInAnonymously();
-      if (error) throw error;
-      
-      // Assign guest role in database
-      if (data.user) {
-        try {
-          await supabase.from('user_roles').insert({
-            user_id: data.user.id,
-            role: 'guest'
-          }).select().single();
-        } catch (roleError) {
-          console.log('Guest role assignment:', roleError);
-        }
-      }
-      
-      toast({
-        title: 'Guest Mode',
-        description: 'Browsing as guest. Some features are limited.',
-      });
-      
-      // Session will be automatically detected by onAuthStateChange
-    } catch (error) {
-      console.error('Guest mode error:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to enter guest mode. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
 
   return (
     <AuthContext.Provider
@@ -211,7 +177,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signInWithOtp,
         verifyOtp,
         signOut,
-        signInAsGuest,
       }}
     >
       {children}
