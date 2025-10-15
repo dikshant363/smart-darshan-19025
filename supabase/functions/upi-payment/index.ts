@@ -7,6 +7,29 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Error mapping helper
+const mapError = (error: Error): { message: string; code: number } => {
+  const errorMessage = error.message.toLowerCase();
+  
+  if (errorMessage.includes('unauthorized') || errorMessage.includes('auth')) {
+    return { message: 'Authentication required', code: 401 };
+  }
+  if (errorMessage.includes('duplicate') || errorMessage.includes('unique')) {
+    return { message: 'This record already exists', code: 409 };
+  }
+  if (errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
+    return { message: 'Resource not found', code: 404 };
+  }
+  if (errorMessage.includes('foreign key') || errorMessage.includes('reference')) {
+    return { message: 'Invalid reference', code: 400 };
+  }
+  if (errorMessage.includes('permission') || errorMessage.includes('policy')) {
+    return { message: 'Permission denied', code: 403 };
+  }
+  
+  return { message: 'An error occurred. Please try again', code: 500 };
+};
+
 const createPaymentSchema = z.object({
   action: z.literal('create'),
   booking_id: z.string().uuid({ message: "Invalid booking ID format" }),
@@ -245,21 +268,16 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('UPI payment error:', error);
+    console.error('UPI payment error:', {
+      error: error,
+      stack: (error as Error).stack,
+      timestamp: new Date().toISOString()
+    });
     
-    // Generic error message for clients
-    let userMessage = 'An error occurred processing your payment';
-    let statusCode = 500;
+    const { message, code } = mapError(error as Error);
     
-    if (error instanceof Error) {
-      if (error.message.includes('Unauthorized') || error.message.includes('Authentication')) {
-        userMessage = 'Authentication required';
-        statusCode = 401;
-      }
-    }
-    
-    return new Response(JSON.stringify({ error: userMessage }), {
-      status: statusCode,
+    return new Response(JSON.stringify({ error: message }), {
+      status: code,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

@@ -7,6 +7,29 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Error mapping helper
+const mapError = (error: Error): { message: string; code: number } => {
+  const errorMessage = error.message.toLowerCase();
+  
+  if (errorMessage.includes('unauthorized') || errorMessage.includes('auth')) {
+    return { message: 'Authentication required', code: 401 };
+  }
+  if (errorMessage.includes('duplicate') || errorMessage.includes('unique')) {
+    return { message: 'This record already exists', code: 409 };
+  }
+  if (errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
+    return { message: 'Resource not found', code: 404 };
+  }
+  if (errorMessage.includes('foreign key') || errorMessage.includes('reference')) {
+    return { message: 'Invalid reference', code: 400 };
+  }
+  if (errorMessage.includes('permission') || errorMessage.includes('policy')) {
+    return { message: 'Permission denied', code: 403 };
+  }
+  
+  return { message: 'An error occurred. Please try again', code: 500 };
+};
+
 const createBookingSchema = z.object({
   temple_id: z.string().uuid({ message: "Invalid temple ID format" }),
   booking_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Invalid date format. Use YYYY-MM-DD" }),
@@ -218,24 +241,16 @@ serve(async (req) => {
     return new Response('Method not allowed', { status: 405, headers: corsHeaders });
 
   } catch (error) {
-    console.error('Booking API error:', error);
+    console.error('Booking API error:', {
+      error: error,
+      stack: (error as Error).stack,
+      timestamp: new Date().toISOString()
+    });
     
-    // Generic error message for clients
-    let userMessage = 'An error occurred processing your booking';
-    let statusCode = 500;
+    const { message, code } = mapError(error as Error);
     
-    if (error instanceof Error) {
-      if (error.message.includes('Unauthorized')) {
-        userMessage = 'Authentication required';
-        statusCode = 401;
-      } else if (error.message.includes('duplicate')) {
-        userMessage = 'A booking with this information already exists';
-        statusCode = 409;
-      }
-    }
-    
-    return new Response(JSON.stringify({ error: userMessage }), {
-      status: statusCode,
+    return new Response(JSON.stringify({ error: message }), {
+      status: code,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

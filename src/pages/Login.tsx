@@ -8,11 +8,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Smartphone, Globe, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { z } from 'zod';
+
+// Phone validation schema
+const phoneSchema = z.string()
+  .min(10, 'Phone number must be at least 10 digits')
+  .max(15, 'Phone number must be at most 15 digits')
+  .regex(/^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}$/, 
+    'Invalid phone number format');
 
 const Login = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signInAsGuest } = useAuth();
+  const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -49,6 +59,17 @@ const Login = () => {
   const handleAuth = async () => {
     if (!email || !password || !phoneNumber) return;
     
+    // Validate phone number
+    const phoneValidation = phoneSchema.safeParse(phoneNumber);
+    if (!phoneValidation.success) {
+      toast({
+        title: 'Invalid Phone Number',
+        description: phoneValidation.error.errors[0].message,
+        variant: 'destructive'
+      });
+      return;
+    }
+    
     setLoading(true);
     try {
       const { supabase } = await import('@/integrations/supabase/client');
@@ -57,8 +78,17 @@ const Login = () => {
         const { error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              phone: phoneNumber
+            }
+          }
         });
         if (error) throw error;
+        toast({
+          title: 'Success',
+          description: 'Account created successfully!',
+        });
         navigate('/dashboard');
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -69,14 +99,26 @@ const Login = () => {
         navigate('/dashboard');
       }
     } catch (error: any) {
-      console.error('Auth error:', error);
+      toast({
+        title: 'Authentication Error',
+        description: error.message || 'Failed to authenticate. Please try again.',
+        variant: 'destructive'
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGuestLogin = () => {
-    navigate('/dashboard');
+  const handleGuestLogin = async () => {
+    setLoading(true);
+    try {
+      await signInAsGuest();
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Guest login error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -146,6 +188,8 @@ const Login = () => {
               placeholder="+91 XXXXX XXXXX"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
+              pattern="[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}"
+              maxLength={15}
               disabled={loading || authLoading}
               required
             />
@@ -206,8 +250,9 @@ const Login = () => {
               variant="outline"
               onClick={handleGuestLogin}
               className="w-full"
+              disabled={loading || authLoading}
             >
-              {t('login.guest')}
+              {loading ? 'Loading...' : t('login.guest')}
             </Button>
           </div>
         </CardContent>
