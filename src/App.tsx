@@ -8,10 +8,12 @@ import './lib/i18n'; // Initialize i18n
 import { AppProvider } from './contexts/AppContext';
 import { AuthProvider } from './contexts/AuthContext';
 
-// Lazy load pages for better performance
+// Eagerly load Login page (entry point) to improve LCP
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+
+// Lazy load secondary pages
 const AppLayout = lazy(() => import("./components/layout/AppLayout"));
-const Login = lazy(() => import("./pages/Login"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Profile = lazy(() => import("./pages/Profile"));
 const TempleInfo = lazy(() => import("./pages/TempleInfo"));
 const Booking = lazy(() => import("./pages/Booking"));
@@ -46,14 +48,13 @@ const App = () => {
             <AppProvider>
               <Toaster />
               <Sonner />
-              <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>}>
-                <Routes>
-            {/* Redirect root to login */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="/login" element={<Login />} />
-            
-            {/* Main app routes with layout */}
-            <Route path="/" element={<AppLayout />}>
+              <Routes>
+                {/* Redirect root to login */}
+                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="/login" element={<Login />} />
+                
+                {/* Main app routes with layout */}
+                <Route path="/" element={<Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>}><AppLayout /></Suspense>}>
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="profile" element={<Profile />} />
               <Route path="temple-info/:templeId?" element={<TempleInfo />} />
@@ -71,10 +72,9 @@ const App = () => {
               <Route path="about" element={<About />} />
             </Route>
 
-                  {/* Catch-all route */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
+                {/* Catch-all route */}
+                <Route path="*" element={<Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>}><NotFound /></Suspense>} />
+              </Routes>
             </AppProvider>
           </AuthProvider>
         </ThemeProvider>
